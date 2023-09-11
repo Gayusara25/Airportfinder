@@ -19,9 +19,7 @@ namespace Airportfinder
 
             return earthRadius * c;
         }
-        
-            private static double DegreesToRadians(double degrees) => degrees * (Math.PI / 180);
-     
 
+        private static double DegreesToRadians(double degrees) => degrees * (Math.PI / 180);
     }
 }

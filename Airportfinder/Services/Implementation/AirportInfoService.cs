@@ -12,20 +12,18 @@ namespace Airportfinder.Services.Implementation
 
         public AirportInfoService(IRepository<AirportInfo> airportRepository, ICityInfo cityinfoService)
         {
-
             _airportRepository = airportRepository;
             _cityinfoService = cityinfoService;
         }
 
-        public List<AirportInfo> GetAirportById()
+        public List<AirportInfo> GetAllAirports()
         {
             return _airportRepository.Get().ToList();
         }
 
-
-        public AirportInfo GetAirportbyId(string Id)
+        public List<AirportInfo> GetAirportsbyId(string Id)
         {
-            return _airportRepository.Get().FirstOrDefault(x => x.IataCode == Id);
+            return _airportRepository.Get().Where(x => x.State == Id).ToList();
         }
 
 
@@ -65,6 +63,29 @@ namespace Airportfinder.Services.Implementation
             }
             return airinrange = airinrange.OrderBy(a => a.Distance).ToList();
         }
+
+        public Tuple<string, string> GetCostDetails(string from, string to)
+        {
+
+            AirportInfo airport1 = GetAirportInfoDetails(from);
+            var startLocation = new Location(airport1.Latitude, airport1.Longitude);
+            AirportInfo airport2 = GetAirportInfoDetails(to);
+            var DestLocation = new Location(airport2.Latitude, airport2.Longitude);
+
+            var maxDistance = HaversineFormula.HaversineDistance(startLocation, DestLocation);
+            var rph = 14.54;
+            double price = rph * maxDistance;
+            price = Math.Round(price, 4);
+            var dist = Math.Round(maxDistance, 4);
+            return Tuple.Create(dist.ToString(), price.ToString());
+        }
+
+
+        private AirportInfo GetAirportInfoDetails(string airportName)
+        {
+            return _airportRepository.Get().AsEnumerable().FirstOrDefault(m => m.AirportName == airportName);
+        }
+
 
         private double CalculateDistance(Location startLocation, Location destinationLocation, Location airportLocation)
         {

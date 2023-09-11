@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace Airportfinder.RepositoryPattern
+﻿namespace Airportfinder.RepositoryPattern
 {
     public class Repository<T> : IRepository<T> where T : class
     {
@@ -19,8 +17,6 @@ namespace Airportfinder.RepositoryPattern
         {
             context.Set<T>().AddAsync(item);
             context.SaveChanges();
-        }
-
-       
+        }       
     }
 }

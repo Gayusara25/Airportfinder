@@ -1,12 +1,6 @@
-﻿using Airportfinder.Models;
-using Airportfinder.Services;
-using Airportfinder.Services.Implementation;
-using Humanizer;
+﻿using Airportfinder.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Runtime;
-
-
 
 namespace Airportfinder.Controllers
 {
@@ -23,24 +17,7 @@ namespace Airportfinder.Controllers
             _cityInfoService = cityInfoService;
             _stateImgService = stateImgService;
         }
-        //public ActionResult FindAirport()
-        //{
-        //    return View();
-        //}
-
-        //[HttpPost]
-        //public IActionResult FindAirport(string city1, string city2)
-        //{
-        //    if (string.IsNullOrWhiteSpace(city1) || string.IsNullOrWhiteSpace(city2))
-        //    {
-        //        return View();
-        //    }
-        //    var airports = _airportInfoService.FindAirport(city1, city2);
-        //    ViewBag.City1 = city1;
-        //    ViewBag.City2 = city2;
-        //    return View(airports);
-        //}
-
+        
         public IActionResult Index()
         {
             return View();
@@ -50,8 +27,8 @@ namespace Airportfinder.Controllers
             var cityList = _cityInfoService.GetCityList().AsEnumerable();
 
             ViewBag.source = new SelectList(cityList, "CITY", "CITY");
-
             ViewBag.destination = new SelectList(cityList, "CITY", "CITY");
+
             return View();
         }
         [HttpPost]
@@ -75,39 +52,28 @@ namespace Airportfinder.Controllers
 
         public IActionResult Cost()
         {
-            var airportList = _airportInfoService.GetAirportById().AsEnumerable();
+            var airportList = _airportInfoService.GetAllAirports().AsEnumerable();
 
             ViewBag.source = new SelectList(airportList, "AirportName", "AirportName");
-
             ViewBag.destination = new SelectList(airportList, "AirportName", "AirportName");
+
             return View();
-          
         }
 
         [HttpPost]
-
         public IActionResult Cost(IFormCollection form)
         {
-            var airportList = _airportInfoService.GetAirportById().AsEnumerable();
-            string From= form["From1"].ToString();
+            string From = form["From1"].ToString();
             string To = form["To1"].ToString();
-            
-            AirportInfo airport1= airportList.FirstOrDefault(m=>m.AirportName == From);
-            var startLocation = new Location(airport1.Latitude,airport1.Longitude);
-            AirportInfo airport2 = airportList.FirstOrDefault(m => m.AirportName == To);
-            var DestLocation = new Location(airport2.Latitude, airport2.Longitude);
 
-            var maxDistance = HaversineFormula.HaversineDistance(startLocation, DestLocation);
-            var rph = 14.54;
-            double price = rph * maxDistance;
-            price = Math.Round(price, 4);
-            var dist = Math.Round(maxDistance, 4);
+            Tuple<string, string> costDetails = _airportInfoService.GetCostDetails(From,To);
 
-            TempData["dist"] = $"The distance between {From} and {To} is {dist} Kms, Cost incurred is   ";
-            TempData["Cost"] = $"INR(₹):{price}";
+            TempData["dist"] = $"The distance between {From} and {To} is {costDetails.Item1} Kms, Cost incurred is   ";
+            TempData["Cost"] = $"INR(₹):{costDetails.Item2}";
 
             return View();
         }
+
         public IActionResult StateWiseAirports()
         {
             var state = _stateImgService.GetStateImgList();
@@ -117,27 +83,22 @@ namespace Airportfinder.Controllers
         [HttpPost]
         public IActionResult StateWiseAirports(string State)
         {
-            var statelist = _stateImgService.GetStateImgList();
-            var StateList = statelist.Where(x => x.State.ToLower().Contains(State.ToLower())).ToList();
-            if (StateList.Count > 0)
+
+            if(!string.IsNullOrEmpty(State))
             {
-                return View(StateList);
-            }
-            return View();
-           
+                var statelist = _stateImgService.GetStateImgList();
+                statelist = statelist.Where(x => x.State.ToLower().Contains(State.ToLower())).ToList();
+                if (statelist.Count > 0)                
+                    return View(statelist);                
+            }           
+            return View();           
         }
 
         public IActionResult AirportList(string id)
-        {
-            var airports = _airportInfoService.GetAirportById();
-            List<AirportInfo> list = airports.FindAll(m => m.State == id);
-            return View (list);
-
-
-
-
-
+        {           
+            return View (_airportInfoService.GetAirportsbyId(id));
         }
+
         public ActionResult Services()
         {
             return View();

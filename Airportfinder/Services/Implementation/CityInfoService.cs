@@ -9,7 +9,6 @@ namespace Airportfinder.Services.Implementation
         private readonly IRepository<CityInfo> _cityRepository;
         public CityInfoService(IRepository<CityInfo> cityRepository)
         {
-
             _cityRepository = cityRepository;
         }
 
@@ -17,6 +16,5 @@ namespace Airportfinder.Services.Implementation
         {
           return  _cityRepository.Get().ToList();
         }
-
     }
 }
